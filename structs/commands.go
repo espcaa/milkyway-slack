@@ -7,8 +7,11 @@ type Command interface {
 }
 
 type Block struct {
-	Type string `json:"type"`
-	Text *Text  `json:"text,omitempty"`
+	Type     string `json:"type"`
+	Text     *Text  `json:"text,omitempty"`
+	ImageURL string `json:"image_url,omitempty"` // for image blocks
+	AltText  string `json:"alt_text,omitempty"`  // for image blocks
+	Title    *Text  `json:"title,omitempty"`     // optional title for image blocks
 }
 
 type Text struct {
