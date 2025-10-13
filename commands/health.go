@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"bytes"
+	"encoding/json"
 	"log"
 	"milkyway-slack/structs"
 	"milkyway-slack/utils"
@@ -10,37 +12,52 @@ import (
 type HealthCommand struct{}
 
 func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) {
+
+	r.ParseForm()
+	responseURL := r.PostFormValue("response_url")
 	// send a 200 status code with a message "OK" to acknoweldge the request
 
-	var answer = structs.Block{
-		Type: "section",
-		Text: &structs.Text{
-			Type: "mrkdwn",
-			Text: "working ^-^",
-		},
-	}
+	// answer quicjly
 
-	// load the file "health.png" from the current directory + send it via catbox file upload to slack
-	url, err := utils.UploadFile("health.png")
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{
+		"response_type": "ephemeral",
+		"text":          "Processing your request…",
+	})
 
-	// create a slack block with the image
+	go func() {
+		url, err := utils.UploadFile("health.png")
+		if err != nil {
+			log.Println("Error uploading file:", err)
+			http.Post(responseURL, "application/json", bytes.NewBuffer([]byte(`{"text":"Failed to upload file :("}`)))
+			return
+		}
 
-	if err != nil {
-		log.Println("Error uploading file:", err)
-		return
-	}
+		blocks := []structs.Block{
+			{
+				Type: "section",
+				Text: &structs.Text{
+					Type: "mrkdwn",
+					Text: "✅ Health check complete!",
+				},
+			},
+			{
+				Type:     "image",
+				ImageURL: url,
+				AltText:  "health image",
+			},
+		}
 
-	var imageBlock = structs.Block{
-		Type:     "image",
-		ImageURL: url,
-		AltText:  "health image",
-	}
+		payload := map[string]any{
+			"response_type": "in_channel",
+			"blocks":        blocks,
+		}
 
-	err = utils.SlackAnswer(w, []structs.Block{answer, imageBlock})
-	if err != nil {
-		http.Error(w, "Failed to send image response", http.StatusInternalServerError)
-		log.Println("Error sending image response:", err)
-		return
-	}
-
+		data, _ := json.Marshal(payload)
+		_, err = http.Post(responseURL, "application/json", bytes.NewBuffer(data))
+		if err != nil {
+			log.Println("Error sending delayed response:", err)
+		}
+	}()
 }
