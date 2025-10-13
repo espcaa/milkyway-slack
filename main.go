@@ -41,5 +41,6 @@ func createMilkywayBot() (*bot.MilkywayBot, error) {
 	// Return the bot instance
 	return &bot.MilkywayBot{
 		AirtableClient: *airtableClient,
+		Port:           port,
 	}, nil
 }

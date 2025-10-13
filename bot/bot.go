@@ -26,9 +26,11 @@ func (bot MilkywayBot) Run() {
 
 		cmdCopy := cmd
 		r.Post("/commands/"+name, func(w http.ResponseWriter, r *http.Request) {
+			log.Println("Received request for command:", name)
 			cmdCopy.Run(w, r)
 		})
 	}
 
-	http.ListenAndServe(":8080", r)
+	log.Println("Server starting at http://localhost:" + bot.Port)
+	http.ListenAndServe(":"+bot.Port, r)
 }
