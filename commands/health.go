@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"log"
 	"milkyway-slack/structs"
 	"milkyway-slack/utils"
 	"net/http"
@@ -19,6 +20,11 @@ func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	utils.SlackAnswer(w, []structs.Block{answer})
+	err := utils.SlackAnswer(w, []structs.Block{answer})
+	if err != nil {
+		http.Error(w, "Failed to send response", http.StatusInternalServerError)
+		log.Println("Error sending response:", err)
+		return
+	}
 
 }
