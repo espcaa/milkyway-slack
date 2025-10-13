@@ -3,16 +3,16 @@ package main
 import (
 	"errors"
 	"log"
+	"milkyway-slack/bot"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/mehanizm/airtable"
 )
 
-type MilkywayBot struct {
-	AirtableClient airtable.Client
-}
-
 func main() {
+
+	godotenv.Load()
 
 	bot, err := createMilkywayBot()
 	if err != nil {
@@ -23,7 +23,12 @@ func main() {
 
 }
 
-func createMilkywayBot() (*MilkywayBot, error) {
+func createMilkywayBot() (*bot.MilkywayBot, error) {
+
+	var port = os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
 
 	var apiKey = os.Getenv("AIRTABLE_API_KEY")
 	if apiKey == "" {
@@ -34,12 +39,7 @@ func createMilkywayBot() (*MilkywayBot, error) {
 	airtableClient := airtable.NewClient(apiKey)
 
 	// Return the bot instance
-	return &MilkywayBot{
+	return &bot.MilkywayBot{
 		AirtableClient: *airtableClient,
 	}, nil
-}
-
-func (bot *MilkywayBot) Run() {
-	// Bot logic here
-
 }
