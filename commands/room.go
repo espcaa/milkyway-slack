@@ -183,7 +183,7 @@ func getUserRecordID(email string, bot structs.BotInterface) (string, error) {
 	var UserTable = bot.GetAirtableClient().GetTable(dbID, "User")
 	records, err := UserTable.GetRecords().
 		WithFilterFormula(fmt.Sprintf(`{email}='%s'`, strings.ReplaceAll(email, "'", "\\'"))).
-		ReturnFields("id", "email").
+		ReturnFields("email").
 		Do()
 	if err != nil {
 		return "", fmt.Errorf("failed to get user records: %w", err)
