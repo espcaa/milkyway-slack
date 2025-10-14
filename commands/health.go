@@ -22,8 +22,7 @@ func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) (err error) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{
-		"response_type": "ephemeral",
-		"text":          "Processing your request…",
+		"text":          "testing things...",
 	})
 
 	url, err := utils.UploadFile("health.png")
@@ -52,8 +51,9 @@ func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) (err error) {
 	}
 
 	payload := map[string]any{
-		"response_type": "in_channel",
+		"replace_original": true,
 		"blocks":        blocks,
+		"text" : "hiii?"
 	}
 
 	data, err := json.Marshal(payload)
