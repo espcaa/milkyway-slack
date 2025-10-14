@@ -34,16 +34,16 @@ func (c RoomCommand) Run(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("failed to send immediate response: %w", err)
 	}
 
-	go func(url string, userID string, db structs.BotInterface) {
+	go func(url string, userID string, bot structs.BotInterface) {
 		// get the user's airtable record
-		email, err := getUserEmail(userID, db)
+		email, err := getUserEmail(userID, bot)
 		if err != nil {
 			log.Printf("Error getting user email: %v", err)
 			sendErrorResponse(url, "Failed to get your email :(")
 			return
 		}
 
-		recordID, err := getUserRecordID(email, db)
+		recordID, err := getUserRecordID(email, bot)
 		if err != nil {
 			log.Printf("Error getting user record ID: %v", err)
 			sendErrorResponse(url, "Failed to find your user record :(")
@@ -52,7 +52,7 @@ func (c RoomCommand) Run(w http.ResponseWriter, r *http.Request) error {
 
 		log.Printf("User email: %s, Record ID: %s", email, recordID)
 
-		room, err := utils.GetRoomData(db, recordID)
+		room, err := utils.GetRoomData(bot, recordID)
 
 		if err != nil {
 			log.Printf("Error getting room data: %v", err)
@@ -83,7 +83,7 @@ func (c RoomCommand) Run(w http.ResponseWriter, r *http.Request) error {
 			},
 		}
 
-		payload := map[string]interface{}{
+		payload := map[string]any{
 			"response_type": "in_channel",
 			"blocks":        blocks,
 			"text":          "room",
