@@ -15,15 +15,12 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 	// Get the projects table
 	projectsTable := bot.GetAirtableClient().GetTable(dbID, "Projects")
 
-	formula := fmt.Sprintf(`FIND("%s", ARRAYJOIN({Users}))`, userRecordId)
+	formula := fmt.Sprintf(`{user}='%s'`, userRecordId)
 
 	projectRecords, err := projectsTable.GetRecords().
 		WithFilterFormula(formula).
 		ReturnFields("egg", "position").
 		Do()
-	if err != nil {
-		return structs.Room{}, fmt.Errorf("failed to get project records: %w", err)
-	}
 
 	if err != nil {
 		return structs.Room{}, fmt.Errorf("failed to get project records: %w", err)
@@ -45,6 +42,37 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 			Position:    position,
 		})
 	}
+
+	// now get furniture
+
+	furnitureTable := bot.GetAirtableClient().GetTable(dbID, "Furniture")
+	furnitureRecords, err := furnitureTable.GetRecords().
+		WithFilterFormula(formula).
+		ReturnFields("texture", "position").
+		Do()
+
+	if err != nil {
+		return structs.Room{}, fmt.Errorf("failed to get furniture records: %w", err)
+	}
+
+	for _, rec := range furnitureRecords.Records {
+		texture, ok := rec.Fields["texture"].(string)
+		if !ok {
+			continue
+		}
+
+		position, ok := rec.Fields["position"].(string)
+		if !ok {
+			continue
+		}
+
+		room.Furnitures = append(room.Furnitures, structs.Furniture{
+			Texture:  texture,
+			Position: position,
+		})
+	}
+
+	room.Floor.Texture = "wood.png"
 
 	return room, nil
 }
