@@ -8,6 +8,7 @@ import (
 	"milkyway-slack/utils"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type RoomCommand struct {
@@ -181,7 +182,7 @@ func getUserRecordID(email string, bot structs.BotInterface) (string, error) {
 
 	var UserTable = bot.GetAirtableClient().GetTable("User", dbID)
 	records, err := UserTable.GetRecords().
-		WithFilterFormula(fmt.Sprintf(`{email}="%s"`, email)).
+		WithFilterFormula(fmt.Sprintf(`{email}='%s'`, strings.ReplaceAll(email, "'", "\\'"))).
 		ReturnFields("Name").
 		Do()
 	if err != nil {

@@ -38,8 +38,6 @@ func createMilkywayBot() (*bot.MilkywayBot, error) {
 		return nil, errors.New("failed to ping SQLite database: " + err.Error())
 	}
 
-	defer db.Close()
-
 	if err != nil {
 		return nil, errors.New("failed to connect to SQLite database: " + err.Error())
 	}
