@@ -51,7 +51,7 @@ func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) (err error) {
 	}
 
 	payload := map[string]any{
-		"replace_original": true,
+		"response_type": "in_channel",
 		"blocks":        blocks,
 		"text" : "hiii?",
 	}
