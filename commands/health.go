@@ -53,7 +53,7 @@ func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) (err error) {
 	payload := map[string]any{
 		"replace_original": true,
 		"blocks":        blocks,
-		"text" : "hiii?"
+		"text" : "hiii?",
 	}
 
 	data, err := json.Marshal(payload)
