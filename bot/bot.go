@@ -31,6 +31,8 @@ func (bot MilkywayBot) Run() {
 			if err != nil {
 				log.Println("Error executing command", name, ":", err)
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			} else {
+				log.Println("Successfully executed command:", name)
 			}
 		})
 	}
