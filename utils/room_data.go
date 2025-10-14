@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"milkyway-slack/structs"
+	"os"
 )
 
 func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, error) {
@@ -10,8 +11,9 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 		Projects: make([]structs.Project, 0),
 	}
 
+	var dbID = os.Getenv("AIRTABLE_BASE_ID")
 	// Get the projects table
-	projectsTable := bot.GetAirtableClient().GetTable("", "Projects")
+	projectsTable := bot.GetAirtableClient().GetTable(dbID, "Projects")
 
 	formula := fmt.Sprintf(`FIND("%s", ARRAYJOIN({Users}))`, userRecordId)
 
