@@ -29,7 +29,10 @@ func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) (err error) {
 	url, err := utils.UploadFile("health.png")
 	if err != nil {
 		log.Println("Error uploading file:", err)
-		http.Post(responseURL, "application/json", bytes.NewBuffer([]byte(`{"text":"Failed to upload file :("}`)))
+		_, postErr := http.Post(responseURL, "application/json", bytes.NewBuffer([]byte(`{"text":"Failed to upload file :("}`)))
+		if postErr != nil {
+			log.Println("Error sending error response:", postErr)
+		}
 		return err
 	}
 
@@ -53,7 +56,11 @@ func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) (err error) {
 		"blocks":        blocks,
 	}
 
-	data, _ := json.Marshal(payload)
+	data, err := json.Marshal(payload)
+	if err != nil {
+		log.Println("Error marshaling JSON:", err)
+		return err
+	}
 	_, err = http.Post(responseURL, "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		log.Println("Error sending delayed response:", err)
