@@ -48,7 +48,7 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 	furnitureTable := bot.GetAirtableClient().GetTable(dbID, "Furniture")
 	furnitureRecords, err := furnitureTable.GetRecords().
 		WithFilterFormula(formula).
-		ReturnFields("texture", "position").
+		ReturnFields("type", "position").
 		Do()
 
 	if err != nil {
@@ -56,7 +56,7 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 	}
 
 	for _, rec := range furnitureRecords.Records {
-		texture, ok := rec.Fields["texture"].(string)
+		texture, ok := rec.Fields["type"].(string)
 		if !ok {
 			continue
 		}
