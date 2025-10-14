@@ -27,7 +27,11 @@ func (bot MilkywayBot) Run() {
 		cmdCopy := cmd
 		r.Post("/commands/"+name, func(w http.ResponseWriter, r *http.Request) {
 			log.Println("Received request for command:", name)
-			cmdCopy.Run(w, r)
+			err := cmdCopy.Run(w, r)
+			if err != nil {
+				log.Println("Error executing command", name, ":", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
 		})
 	}
 

@@ -11,7 +11,7 @@ import (
 
 type HealthCommand struct{}
 
-func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) {
+func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) (err error) {
 
 	r.ParseForm()
 	responseURL := r.PostFormValue("response_url")
@@ -30,7 +30,7 @@ func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Error uploading file:", err)
 		http.Post(responseURL, "application/json", bytes.NewBuffer([]byte(`{"text":"Failed to upload file :("}`)))
-		return
+		return err
 	}
 
 	blocks := []structs.Block{
@@ -57,5 +57,8 @@ func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) {
 	_, err = http.Post(responseURL, "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		log.Println("Error sending delayed response:", err)
+		return err
 	}
+
+	return nil
 }
