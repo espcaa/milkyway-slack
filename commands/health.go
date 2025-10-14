@@ -36,45 +36,40 @@ func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) error {
 	// answer quickly
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+
+
 	if err := json.NewEncoder(w).Encode(map[string]string{
 		"text": "checking health...",
 	}); err != nil {
 		return fmt.Errorf("failed to send immediate response: %w", err)
 	}
 
-	url, err := utils.UploadFile("health.png")
-	if err != nil {
-		log.Printf("Error uploading file: %v", err)
-		return sendErrorResponse(responseURL, "Failed to upload health status image :(")
-	}
+	go func(url string) {
+        uploadedURL, err := utils.UploadFile("health.png")
+        if err != nil {
+            log.Printf("Error uploading file: %v", err)
+            sendErrorResponse(url, "Failed to upload health status image :(")
+            return
+        }
 
-	blocks := []Block{
-		{
-			Type: "section",
-			Text: &Text{
-				Type: "mrkdwn",
-				Text: "hiii, everything should work ^-^",
-			},
-		},
-		{
-			Type:     "image",
-			ImageURL: url,
-			AltText:  "health status",
-		},
-	}
+        blocks := []Block{
+            {Type: "section", Text: &Text{Type: "mrkdwn", Text: "hiii, everything should work ^-^"}},
+            {Type: "image", ImageURL: uploadedURL, AltText: "health status"},
+        }
 
-	payload := map[string]interface{}{
-		"response_type": "in_channel",
-		"blocks":        blocks,
-		"text":         "health check",
-	}
+        payload := map[string]interface{}{
+            "response_type": "in_channel",
+            "blocks":        blocks,
+            "text":          "health check",
+        }
 
-	if err := sendSlackResponse(responseURL, payload); err != nil {
-		log.Printf("Error sending final response: %v", err)
-		return sendErrorResponse(responseURL, "Failed to send health status :(")
-	}
+        if err := sendSlackResponse(url, payload); err != nil {
+            log.Printf("Error sending final response: %v", err)
+            sendErrorResponse(url, "Failed to send health status :(")
+        }
+    }(responseURL)
 
-	return nil
+    return nil
 }
 
 func sendSlackResponse(url string, payload interface{}) error {
