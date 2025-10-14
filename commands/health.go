@@ -38,7 +38,7 @@ func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) {
 			Type: "section",
 			Text: &structs.Text{
 				Type: "mrkdwn",
-				Text: "✅ Health check complete!",
+				Text: "it's working ^-^",
 			},
 		},
 		{
