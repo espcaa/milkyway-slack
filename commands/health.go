@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -37,7 +36,6 @@ func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-
 	if err := json.NewEncoder(w).Encode(map[string]string{
 		"text": "checking health...",
 	}); err != nil {
@@ -45,57 +43,29 @@ func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	go func(url string) {
-        uploadedURL, err := utils.UploadFile("health.png")
-        if err != nil {
-            log.Printf("Error uploading file: %v", err)
-            sendErrorResponse(url, "Failed to upload health status image :(")
-            return
-        }
+		uploadedURL, err := utils.UploadFile("health.png")
+		if err != nil {
+			log.Printf("Error uploading file: %v", err)
+			sendErrorResponse(url, "Failed to upload health status image :(")
+			return
+		}
 
-        blocks := []Block{
-            {Type: "section", Text: &Text{Type: "mrkdwn", Text: "hiii, everything should work ^-^"}},
-            {Type: "image", ImageURL: uploadedURL, AltText: "health status"},
-        }
+		blocks := []Block{
+			{Type: "section", Text: &Text{Type: "mrkdwn", Text: "hiii, everything should work ^-^"}},
+			{Type: "image", ImageURL: uploadedURL, AltText: "health status"},
+		}
 
-        payload := map[string]interface{}{
-            "response_type": "in_channel",
-            "blocks":        blocks,
-            "text":          "health check",
-        }
+		payload := map[string]interface{}{
+			"response_type": "in_channel",
+			"blocks":        blocks,
+			"text":          "health check",
+		}
 
-        if err := sendSlackResponse(url, payload); err != nil {
-            log.Printf("Error sending final response: %v", err)
-            sendErrorResponse(url, "Failed to send health status :(")
-        }
-    }(responseURL)
-
-    return nil
-}
-
-func sendSlackResponse(url string, payload interface{}) error {
-	data, err := json.Marshal(payload)
-	if err != nil {
-		return fmt.Errorf("failed to marshal payload: %w", err)
-	}
-
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data))
-	if err != nil {
-		return fmt.Errorf("failed to send request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
+		if err := sendSlackResponse(url, payload); err != nil {
+			log.Printf("Error sending final response: %v", err)
+			sendErrorResponse(url, "Failed to send health status :(")
+		}
+	}(responseURL)
 
 	return nil
-}
-
-func sendErrorResponse(url, message string) error {
-	payload := map[string]string{
-		"response_type": "ephemeral",
-		"text":         message,
-	}
-
-	return sendSlackResponse(url, payload)
 }

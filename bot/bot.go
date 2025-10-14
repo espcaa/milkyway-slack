@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"database/sql"
 	"log"
 	"milkyway-slack/commands"
 	"net/http"
@@ -10,11 +11,20 @@ import (
 )
 
 type MilkywayBot struct {
-	AirtableClient airtable.Client
+	AirtableClient *airtable.Client
 	Port           string
+	Sqlite         *sql.DB
 }
 
-func (bot MilkywayBot) Run() {
+func (bot *MilkywayBot) GetAirtableClient() *airtable.Client {
+	return bot.AirtableClient
+}
+
+func (bot *MilkywayBot) GetDB() *sql.DB {
+	return bot.Sqlite
+}
+
+func (bot *MilkywayBot) Run() {
 	// Bot logic here
 
 	r := chi.NewRouter()

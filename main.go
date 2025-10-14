@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"errors"
 	"log"
 	"milkyway-slack/bot"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/mehanizm/airtable"
+	_ "modernc.org/sqlite"
 )
 
 func main() {
@@ -25,6 +27,23 @@ func main() {
 
 func createMilkywayBot() (*bot.MilkywayBot, error) {
 
+	db, err := sql.Open("sqlite", "file:milkyway.db?_foreign_keys=on")
+	if err != nil {
+		return nil, errors.New("failed to open SQLite database: " + err.Error())
+	}
+
+	err = db.Ping()
+
+	if err != nil {
+		return nil, errors.New("failed to ping SQLite database: " + err.Error())
+	}
+
+	defer db.Close()
+
+	if err != nil {
+		return nil, errors.New("failed to connect to SQLite database: " + err.Error())
+	}
+
 	var port = os.Getenv("PORT")
 	if port == "" {
 		port = "3000"
@@ -40,7 +59,8 @@ func createMilkywayBot() (*bot.MilkywayBot, error) {
 
 	// Return the bot instance
 	return &bot.MilkywayBot{
-		AirtableClient: *airtableClient,
+		AirtableClient: airtableClient,
 		Port:           port,
+		Sqlite:         db,
 	}, nil
 }
