@@ -180,7 +180,7 @@ func getUserRecordID(email string, bot structs.BotInterface) (string, error) {
 		return "", fmt.Errorf("AIRTABLE_BASE_ID not set")
 	}
 
-	var UserTable = bot.GetAirtableClient().GetTable("User", dbID)
+	var UserTable = bot.GetAirtableClient().GetTable(dbID, "User")
 	records, err := UserTable.GetRecords().
 		WithFilterFormula(fmt.Sprintf(`{email}='%s'`, strings.ReplaceAll(email, "'", "\\'"))).
 		ReturnFields("Name").

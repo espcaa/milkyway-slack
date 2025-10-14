@@ -38,6 +38,15 @@ func createMilkywayBot() (*bot.MilkywayBot, error) {
 		return nil, errors.New("failed to ping SQLite database: " + err.Error())
 	}
 
+	// if the table user_overrides doesn't exist, create it
+	_, err = db.Exec(`
+	CREATE TABLE IF NOT EXISTS user_overrides (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		slack_id TEXT UNIQUE,
+		email TEXT
+	);
+	`)
+
 	if err != nil {
 		return nil, errors.New("failed to connect to SQLite database: " + err.Error())
 	}
