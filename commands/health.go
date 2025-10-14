@@ -26,38 +26,36 @@ func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) {
 		"text":          "Processing your request…",
 	})
 
-	go func() {
-		url, err := utils.UploadFile("health.png")
-		if err != nil {
-			log.Println("Error uploading file:", err)
-			http.Post(responseURL, "application/json", bytes.NewBuffer([]byte(`{"text":"Failed to upload file :("}`)))
-			return
-		}
+	url, err := utils.UploadFile("health.png")
+	if err != nil {
+		log.Println("Error uploading file:", err)
+		http.Post(responseURL, "application/json", bytes.NewBuffer([]byte(`{"text":"Failed to upload file :("}`)))
+		return
+	}
 
-		blocks := []structs.Block{
-			{
-				Type: "section",
-				Text: &structs.Text{
-					Type: "mrkdwn",
-					Text: "✅ Health check complete!",
-				},
+	blocks := []structs.Block{
+		{
+			Type: "section",
+			Text: &structs.Text{
+				Type: "mrkdwn",
+				Text: "✅ Health check complete!",
 			},
-			{
-				Type:     "image",
-				ImageURL: url,
-				AltText:  "health image",
-			},
-		}
+		},
+		{
+			Type:     "image",
+			ImageURL: url,
+			AltText:  "health image",
+		},
+	}
 
-		payload := map[string]any{
-			"response_type": "in_channel",
-			"blocks":        blocks,
-		}
+	payload := map[string]any{
+		"response_type": "in_channel",
+		"blocks":        blocks,
+	}
 
-		data, _ := json.Marshal(payload)
-		_, err = http.Post(responseURL, "application/json", bytes.NewBuffer(data))
-		if err != nil {
-			log.Println("Error sending delayed response:", err)
-		}
-	}()
+	data, _ := json.Marshal(payload)
+	_, err = http.Post(responseURL, "application/json", bytes.NewBuffer(data))
+	if err != nil {
+		log.Println("Error sending delayed response:", err)
+	}
 }
