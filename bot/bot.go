@@ -29,6 +29,8 @@ func (bot *MilkywayBot) Run() {
 
 	r := chi.NewRouter()
 
+	commands.CommandRegistry = commands.InitCommands(bot)
+
 	// add the post endpoints for each command
 	for name, cmd := range commands.CommandRegistry {
 
