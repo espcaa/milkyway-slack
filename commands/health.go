@@ -62,7 +62,7 @@ func (c HealthCommand) Run(w http.ResponseWriter, r *http.Request) error {
 			AltText:  "health status",
 		},
 	}
-s
+
 	payload := map[string]interface{}{
 		"response_type": "in_channel",
 		"blocks":        blocks,
