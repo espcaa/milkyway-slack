@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"milkyway-slack/structs"
 	"os"
 )
@@ -12,66 +11,62 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 	}
 
 	var dbID = os.Getenv("AIRTABLE_BASE_ID")
-	// Get the projects table
-	projectsTable := bot.GetAirtableClient().GetTable(dbID, "Projects")
 
-	formula := fmt.Sprintf(`{user} = RECORD_ID('%s')`, userRecordId)
+	// get the user record with the user_record id
 
-	projectRecords, err := projectsTable.GetRecords().
-		WithFilterFormula(formula).
-		ReturnFields("egg", "position").
-		Do()
-
+	var UserTable = bot.GetAirtableClient().GetTable(dbID, "User")
+	userRecord, err := UserTable.GetRecord(userRecordId)
 	if err != nil {
-		return structs.Room{}, fmt.Errorf("failed to get project records: %w", err)
+		return room, err
 	}
 
-	for _, rec := range projectRecords.Records {
-		eggTexture, ok := rec.Fields["egg"].(string)
-		if !ok {
-			continue
-		}
+	// now go to the user_record "projects" and "Furniture" fields to get the linked records to populate the room data
 
-		position, ok := rec.Fields["position"].(string)
-		if !ok {
-			continue
+	// Projects
+	if projectsField, ok := userRecord.Fields["projects"].([]interface{}); ok {
+		var ProjectTable = bot.GetAirtableClient().GetTable(dbID, "Project")
+		for _, projectID := range projectsField {
+			if projectIDStr, ok := projectID.(string); ok {
+				projectRecord, err := ProjectTable.GetRecord(projectIDStr)
+				if err != nil {
+					continue
+				}
+				project := structs.Project{}
+				if eggTexture, ok := projectRecord.Fields["egg_texture"].(string); ok {
+					project.Egg_texture = eggTexture
+				}
+				if position, ok := projectRecord.Fields["position"].(string); ok {
+					project.Position = position
+				}
+				room.Projects = append(room.Projects, project)
+			}
 		}
-
-		room.Projects = append(room.Projects, structs.Project{
-			Egg_texture: eggTexture,
-			Position:    position,
-		})
 	}
 
-	// now get furniture
-
-	furnitureTable := bot.GetAirtableClient().GetTable(dbID, "Furniture")
-	furnitureRecords, err := furnitureTable.GetRecords().
-		WithFilterFormula(formula).
-		ReturnFields("type", "position").
-		Do()
-
-	if err != nil {
-		return structs.Room{}, fmt.Errorf("failed to get furniture records: %w", err)
+	// Furnitures
+	room.Furnitures = make([]structs.Furniture, 0)
+	if furnituresField, ok := userRecord.Fields["furnitures"].([]interface{}); ok {
+		var FurnitureTable = bot.GetAirtableClient().GetTable(dbID, "Furniture")
+		for _, furnitureID := range furnituresField {
+			if furnitureIDStr, ok := furnitureID.(string); ok {
+				furnitureRecord, err := FurnitureTable.GetRecord(furnitureIDStr)
+				if err != nil {
+					continue
+				}
+				furniture := structs.Furniture{}
+				if texture, ok := furnitureRecord.Fields["texture"].(string); ok {
+					furniture.Texture = texture
+				}
+				if position, ok := furnitureRecord.Fields["position"].(string); ok {
+					furniture.Position = position
+				}
+				room.Furnitures = append(room.Furnitures, furniture)
+			}
+		}
 	}
 
-	for _, rec := range furnitureRecords.Records {
-		texture, ok := rec.Fields["type"].(string)
-		if !ok {
-			continue
-		}
-
-		position, ok := rec.Fields["position"].(string)
-		if !ok {
-			continue
-		}
-
-		room.Furnitures = append(room.Furnitures, structs.Furniture{
-			Texture:  texture,
-			Position: position,
-		})
-	}
-
+	// Floor
+	room.Floor = structs.Floor{}
 	room.Floor.Texture = "wood.png"
 
 	return room, nil
