@@ -15,7 +15,7 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 	// Get the projects table
 	projectsTable := bot.GetAirtableClient().GetTable(dbID, "Projects")
 
-	formula := fmt.Sprintf(`{user}='%s'`, userRecordId)
+	formula := fmt.Sprintf(`{user} = RECORD_ID('%s')`, userRecordId)
 
 	projectRecords, err := projectsTable.GetRecords().
 		WithFilterFormula(formula).
