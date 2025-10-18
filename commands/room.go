@@ -69,11 +69,13 @@ func (c RoomCommand) Run(w http.ResponseWriter, r *http.Request) error {
 
 		markdownRoomInfo += fmt.Sprintf("%v", room)
 
+		markdownRoomInfo += "\n*Projects:*\n\n"
 		for _, value := range room.Projects {
-			markdownRoomInfo += fmt.Sprintf("  * Project: %s\n", value.Egg_texture)
+			markdownRoomInfo += fmt.Sprintf("  * Project:* \n %s\n \n ", value.Egg_texture)
 		}
+		markdownRoomInfo += "\n*Furnitures:*\n\n"
 		for _, value := range room.Furnitures {
-			markdownRoomInfo += fmt.Sprintf("  * Furniture: %s\n", value.Texture)
+			markdownRoomInfo += fmt.Sprintf("%v : %v \n", value.Texture, value.Position)
 		}
 		if markdownRoomInfo == "" {
 			markdownRoomInfo = "Your room is empty. Start adding projects!"
