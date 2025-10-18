@@ -66,6 +66,9 @@ func (c RoomCommand) Run(w http.ResponseWriter, r *http.Request) error {
 		// transform room data into a message
 
 		var markdownRoomInfo string
+
+		markdownRoomInfo += fmt.Sprintf("%v", room)
+
 		for _, value := range room.Projects {
 			markdownRoomInfo += fmt.Sprintf("  * Project: %s\n", value.Egg_texture)
 		}
