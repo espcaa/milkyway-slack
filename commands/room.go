@@ -61,6 +61,8 @@ func (c RoomCommand) Run(w http.ResponseWriter, r *http.Request) error {
 			return
 		}
 
+		log.Printf("Fetched room data: %+v", room)
+
 		// transform room data into a message
 
 		var markdownRoomInfo string
