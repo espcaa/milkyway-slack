@@ -23,7 +23,7 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 	// now go to the user_record "projects" and "Furniture" fields to get the linked records to populate the room data
 
 	// Projects
-	if projectsField, ok := userRecord.Fields["projects"].([]interface{}); ok {
+	if projectsField, ok := userRecord.Fields["projects"].([]any); ok {
 		var ProjectTable = bot.GetAirtableClient().GetTable(dbID, "Project")
 		for _, projectID := range projectsField {
 			if projectIDStr, ok := projectID.(string); ok {
@@ -32,7 +32,7 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 					continue
 				}
 				project := structs.Project{}
-				if eggTexture, ok := projectRecord.Fields["egg_texture"].(string); ok {
+				if eggTexture, ok := projectRecord.Fields["egg"].(string); ok {
 					project.Egg_texture = eggTexture
 				}
 				if position, ok := projectRecord.Fields["position"].(string); ok {
@@ -54,7 +54,7 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 					continue
 				}
 				furniture := structs.Furniture{}
-				if texture, ok := furnitureRecord.Fields["texture"].(string); ok {
+				if texture, ok := furnitureRecord.Fields["type"].(string); ok {
 					furniture.Texture = texture
 				}
 				if position, ok := furnitureRecord.Fields["position"].(string); ok {
