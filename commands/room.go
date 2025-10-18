@@ -71,7 +71,7 @@ func (c RoomCommand) Run(w http.ResponseWriter, r *http.Request) error {
 
 		markdownRoomInfo += "\n*Projects:*\n\n"
 		for _, value := range room.Projects {
-			markdownRoomInfo += fmt.Sprintf("  * Project:* \n %s\n \n ", value.Egg_texture)
+			markdownRoomInfo += fmt.Sprintf(" %v : %v \n ", value.Egg_texture)
 		}
 		markdownRoomInfo += "\n*Furnitures:*\n\n"
 		for _, value := range room.Furnitures {
