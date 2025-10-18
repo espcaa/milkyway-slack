@@ -24,7 +24,7 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 
 	// Projects
 	if projectsField, ok := userRecord.Fields["projects"].([]any); ok {
-		var ProjectTable = bot.GetAirtableClient().GetTable(dbID, "Project")
+		var ProjectTable = bot.GetAirtableClient().GetTable(dbID, "Projects")
 		for _, projectID := range projectsField {
 			if projectIDStr, ok := projectID.(string); ok {
 				projectRecord, err := ProjectTable.GetRecord(projectIDStr)
@@ -45,7 +45,7 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 
 	// Furnitures
 	room.Furnitures = make([]structs.Furniture, 0)
-	if furnituresField, ok := userRecord.Fields["furnitures"].([]interface{}); ok {
+	if furnituresField, ok := userRecord.Fields["Furniture"].([]interface{}); ok {
 		var FurnitureTable = bot.GetAirtableClient().GetTable(dbID, "Furniture")
 		for _, furnitureID := range furnituresField {
 			if furnitureIDStr, ok := furnitureID.(string); ok {
