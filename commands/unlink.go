@@ -35,15 +35,6 @@ func (c LinkCommand) Run(w http.ResponseWriter, r *http.Request) error {
 		return json.NewEncoder(w).Encode(response)
 	}
 
-	if text == "" {
-		response := map[string]interface{}{
-			"response_type": "ephemeral",
-			"text":          "please provide an email address to link",
-		}
-		w.Header().Set("Content-Type", "application/json")
-		return json.NewEncoder(w).Encode(response)
-	}
-
 	// Send success response
 	w.Header().Set("Content-Type", "application/json")
 	response := map[string]interface{}{
