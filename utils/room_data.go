@@ -134,8 +134,8 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 					// top: ((var(--x) + var(--y)) * var(--tile-height) / 2)
 
 					// x = j, y = i
-					tileRelX := (j - i) * TileWidth / 2
-					tileRelY := (j + i) * TileHeight / 2
+					tileRelX := (j - i) * TileWidth
+					tileRelY := (j + i) * TileHeight
 
 					// Calculate the absolute position on the canvas
 					absX := GridOffsetFloorX + tileRelX
@@ -176,6 +176,8 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		}
 		xRel, err1 := strconv.Atoi(parts[0])
 		yRel, err2 := strconv.Atoi(parts[1])
+		xRel *= 2 // Projects use double scale for positioning
+		yRel *= 2
 		if err1 != nil || err2 != nil {
 			continue
 		}
@@ -227,6 +229,10 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		}
 		xRel, err1 := strconv.Atoi(parts[0])
 		yRel, err2 := strconv.Atoi(parts[1])
+
+		xRel *= 2 // Furnitures use double scale for positioning
+		yRel *= 2
+
 		if err1 != nil || err2 != nil {
 			continue
 		}
@@ -245,8 +251,8 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		// Calculate absolute position on the canvas: CanvasCenter + RelativePos - (ImageSize/2)
 		// We use the bounds of the NOW RESIZED image.
 		imgBounds := furnImg.Bounds()
-		xAbs := CanvasCenterX + xRel - imgBounds.Dx()/2*2
-		yAbs := CanvasCenterY + yRel - imgBounds.Dy()/2*2
+		xAbs := CanvasCenterX + xRel - imgBounds.Dx()/2
+		yAbs := CanvasCenterY + yRel - imgBounds.Dy()/2
 
 		pos := image.Pt(xAbs, yAbs)
 		r := image.Rectangle{Min: pos, Max: pos.Add(imgBounds.Size())}
