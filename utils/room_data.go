@@ -114,7 +114,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 	// Calculate the top-left corner of the isometric projection of the tile grid.
 	// This empirically centers a 6x6 grid in the floor area.
 	const GridOffsetFloorX = CanvasCenterX - (TileWidth / 2) - TileWidth
-	const GridOffsetFloorY = CanvasCenterY - (FloorGridSize * TileHeight / 2)
+	const GridOffsetFloorY = CanvasCenterY + (FloorGridSize * TileHeight / 2)
 
 	floorTextureName := room.Floor.Texture
 	if floorTextureName == "" {
@@ -134,8 +134,8 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 					// top: ((var(--x) + var(--y)) * var(--tile-height) / 2)
 
 					// x = j, y = i
-					tileRelX := (j - i) * TileWidth / 2
-					tileRelY := (j + i) * TileHeight / 2
+					tileRelX := (j - i) * TileWidth
+					tileRelY := (j + i) * TileHeight
 
 					// Calculate the absolute position on the canvas
 					absX := GridOffsetFloorX + tileRelX
