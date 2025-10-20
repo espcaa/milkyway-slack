@@ -86,7 +86,9 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		FloorGridSize = 6
 		CanvasCenterX = 377
 		CanvasCenterY = 600
+		ScaleFactor   = 1.5 // everything scaled 1.5x
 	)
+
 	baseRoomFile, err := os.Open("ressources/room.png")
 	if err != nil {
 		return nil, err
@@ -100,12 +102,13 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 	canvas := image.NewRGBA(baseRoomImg.Bounds())
 	draw.Draw(canvas, canvas.Bounds(), baseRoomImg, image.Point{}, draw.Src)
 
-	const GridOffsetFloorY = CanvasCenterY - (TileHeight * FloorGridSize / 2)
-	const GridOffsetFloorX = CanvasCenterX - (TileWidth * FloorGridSize / 2)
+	const GridOffsetFloorY = CanvasCenterY - int(float64(TileHeight*FloorGridSize)/2*ScaleFactor)
+	const GridOffsetFloorX = CanvasCenterX - int(float64(TileWidth*FloorGridSize)/2*ScaleFactor)
 
+	// Floor
 	floorTextureName := room.Floor.Texture
 	if floorTextureName == "" {
-		floorTextureName = "wood"
+		floorTextureName = "wood.png"
 	}
 
 	tileFile, err := os.Open("ressources/synced/floor/" + floorTextureName)
@@ -113,8 +116,8 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		defer tileFile.Close()
 		tileImg, err := png.Decode(tileFile)
 		if err == nil {
-			// Pre-resize once
-			resizedTileImg := resize.Resize(TileWidth, TileHeight, tileImg, resize.Lanczos3)
+			// resize once with scale factor
+			resizedTileImg := resize.Resize(uint(float64(TileWidth)*ScaleFactor), uint(float64(TileHeight)*ScaleFactor), tileImg, resize.Lanczos3)
 			tileBounds := resizedTileImg.Bounds()
 			tileW, tileH := tileBounds.Dx(), tileBounds.Dy()
 
@@ -133,16 +136,16 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 			}
 		}
 	}
+
+	// Projects
 	for _, project := range room.Projects {
 		if project.Egg_texture == "" || project.Position == "" {
 			continue
 		}
-
 		projectFile, err := os.Open("ressources/synced" + project.Egg_texture)
 		if err != nil {
 			continue
 		}
-
 		projectImg, _, err := image.Decode(projectFile)
 		projectFile.Close()
 		if err != nil {
@@ -159,19 +162,20 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 			continue
 		}
 
-		resizedImg := resize.Resize(TileWidth*2, 0, projectImg, resize.Lanczos3)
-
+		// resize 1.5x
+		resizedImg := resize.Resize(uint(float64(projectImg.Bounds().Dx())*ScaleFactor), 0, projectImg, resize.Lanczos3)
 		projectImg = resizedImg
 
 		imgBounds := projectImg.Bounds()
-		xAbs := CanvasCenterX + xRel - imgBounds.Dx()/2*2
-		yAbs := CanvasCenterY + yRel - imgBounds.Dy()/2*2
+		xAbs := CanvasCenterX + int(float64(xRel)*ScaleFactor) - imgBounds.Dx()/2
+		yAbs := CanvasCenterY + int(float64(yRel)*ScaleFactor) - imgBounds.Dy()/2
 
 		pos := image.Pt(xAbs, yAbs)
 		r := image.Rectangle{Min: pos, Max: pos.Add(imgBounds.Size())}
 		draw.Draw(canvas, r, projectImg, image.Point{}, draw.Over)
 	}
 
+	// Furniture
 	for _, furniture := range room.Furnitures {
 		if furniture.Texture == "" || furniture.Position == "" {
 			continue
@@ -181,7 +185,6 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		if err != nil {
 			continue
 		}
-
 		furnImg, _, err := image.Decode(furnFile)
 		furnFile.Close()
 		if err != nil {
@@ -194,18 +197,16 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		}
 		xRel, err1 := strconv.Atoi(parts[0])
 		yRel, err2 := strconv.Atoi(parts[1])
-
 		if err1 != nil || err2 != nil {
 			continue
 		}
 
-		resizedImg := resize.Resize(TileWidth*2, 0, furnImg, resize.Lanczos3)
-
+		resizedImg := resize.Resize(uint(float64(furnImg.Bounds().Dx())*ScaleFactor), 0, furnImg, resize.Lanczos3)
 		furnImg = resizedImg
 
 		imgBounds := furnImg.Bounds()
-		xAbs := CanvasCenterX + xRel - imgBounds.Dx()/2
-		yAbs := CanvasCenterY + yRel - imgBounds.Dy()/2
+		xAbs := CanvasCenterX + int(float64(xRel)*ScaleFactor) - imgBounds.Dx()/2
+		yAbs := CanvasCenterY + int(float64(yRel)*ScaleFactor) - imgBounds.Dy()/2
 
 		pos := image.Pt(xAbs, yAbs)
 		r := image.Rectangle{Min: pos, Max: pos.Add(imgBounds.Size())}
