@@ -91,7 +91,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 
 		// Estimated center of the room area within the final image canvas.
 		CanvasCenterX = 377
-		CanvasCenterY = 200
+		CanvasCenterY = 440
 	)
 	// --- 1. Load the base room image (ressources/room.png) ---
 	baseRoomFile, err := os.Open("ressources/room.png")
@@ -194,8 +194,8 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		// Calculate absolute position on the canvas: CanvasCenter + RelativePos - (ImageSize/2)
 		// We use the bounds of the NOW RESIZED image.
 		imgBounds := projectImg.Bounds()
-		xAbs := CanvasCenterX + xRel - imgBounds.Dx()/2
-		yAbs := CanvasCenterY + yRel - imgBounds.Dy()/2
+		xAbs := CanvasCenterX + xRel - imgBounds.Dx()/2*2
+		yAbs := CanvasCenterY + yRel - imgBounds.Dy()/2*2
 
 		pos := image.Pt(xAbs, yAbs)
 		r := image.Rectangle{Min: pos, Max: pos.Add(imgBounds.Size())}
@@ -245,8 +245,8 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		// Calculate absolute position on the canvas: CanvasCenter + RelativePos - (ImageSize/2)
 		// We use the bounds of the NOW RESIZED image.
 		imgBounds := furnImg.Bounds()
-		xAbs := CanvasCenterX + xRel - imgBounds.Dx()/2
-		yAbs := CanvasCenterY + yRel - imgBounds.Dy()/2
+		xAbs := CanvasCenterX + xRel - imgBounds.Dx()/2*2
+		yAbs := CanvasCenterY + yRel - imgBounds.Dy()/2*2
 
 		pos := image.Pt(xAbs, yAbs)
 		r := image.Rectangle{Min: pos, Max: pos.Add(imgBounds.Size())}
