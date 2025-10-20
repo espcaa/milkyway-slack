@@ -204,55 +204,55 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 	}
 	// --- 4. Draw Furnitures ---
 	// Same 2D placement logic as projects.
-	-for _, furniture := range room.Furnitures {
-			if furniture.Texture == "" || furniture.Position == "" {
-				continue
-			}
-
-			furnFile, err := os.Open("ressources/synced/room/" + furniture.Texture + ".png")
-			if err != nil {
-				continue
-			}
-
-        // Use image.Decode as requested
-			furnImg, _, err := image.Decode(furnFile)
-			furnFile.Close()
-			if err != nil {
-				continue
-			}
-
-			parts := strings.Split(furniture.Position, ",")
-			// Use only the first two parts for x, y, ignoring the optional 'flipped' state.
-			if len(parts) < 2 {
-				continue
-			}
-			xRel, err1 := strconv.Atoi(parts[0])
-			yRel, err2 := strconv.Atoi(parts[1])
-			if err1 != nil || err2 != nil {
-				continue
-			}
-
-			// ==========================================================
-			// ✨ RESIZE IMPLEMENTATION FOR FURNITURE ✨
-			// Scale the image so its width is TileWidth (96), preserving aspect ratio (height=0).
-        // NOTE: This requires importing a resizing library like 'github.com/oliamb/resize'.
-
-			resizedImg := resize.Resize(TileWidth, 0, furnImg, resize.Lanczos3)
-
-        // Reassign furnImg to the new, resized image
-        furnImg = resizedImg
-        // ==========================================================
-
-			// Calculate absolute position on the canvas: CanvasCenter + RelativePos - (ImageSize/2)
-			// We use the bounds of the NOW RESIZED image.
-			imgBounds := furnImg.Bounds()
-			xAbs := CanvasCenterX + xRel - imgBounds.Dx()/2
-			yAbs := CanvasCenterY + yRel - imgBounds.Dy()/2
-
-			pos := image.Pt(xAbs, yAbs)
-			r := image.Rectangle{Min: pos, Max: pos.Add(imgBounds.Size())}
-			draw.Draw(canvas, r, furnImg, image.Point{}, draw.Over)
+	for _, furniture := range room.Furnitures {
+		if furniture.Texture == "" || furniture.Position == "" {
+			continue
 		}
+
+		furnFile, err := os.Open("ressources/synced/room/" + furniture.Texture + ".png")
+		if err != nil {
+			continue
+		}
+
+		// Use image.Decode as requested
+		furnImg, _, err := image.Decode(furnFile)
+		furnFile.Close()
+		if err != nil {
+			continue
+		}
+
+		parts := strings.Split(furniture.Position, ",")
+		// Use only the first two parts for x, y, ignoring the optional 'flipped' state.
+		if len(parts) < 2 {
+			continue
+		}
+		xRel, err1 := strconv.Atoi(parts[0])
+		yRel, err2 := strconv.Atoi(parts[1])
+		if err1 != nil || err2 != nil {
+			continue
+		}
+
+		// ==========================================================
+		// ✨ RESIZE IMPLEMENTATION FOR FURNITURE ✨
+		// Scale the image so its width is TileWidth (96), preserving aspect ratio (height=0).
+		// NOTE: This requires importing a resizing library like 'github.com/oliamb/resize'.
+
+		resizedImg := resize.Resize(TileWidth, 0, furnImg, resize.Lanczos3)
+
+		// Reassign furnImg to the new, resized image
+		furnImg = resizedImg
+		// ==========================================================
+
+		// Calculate absolute position on the canvas: CanvasCenter + RelativePos - (ImageSize/2)
+		// We use the bounds of the NOW RESIZED image.
+		imgBounds := furnImg.Bounds()
+		xAbs := CanvasCenterX + xRel - imgBounds.Dx()/2
+		yAbs := CanvasCenterY + yRel - imgBounds.Dy()/2
+
+		pos := image.Pt(xAbs, yAbs)
+		r := image.Rectangle{Min: pos, Max: pos.Add(imgBounds.Size())}
+		draw.Draw(canvas, r, furnImg, image.Point{}, draw.Over)
+	}
 
 	return canvas, nil
 }
