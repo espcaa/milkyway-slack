@@ -79,21 +79,20 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 	return room, nil
 }
 
-const (
-	TileWidth = 96 / 2
-	// FIX: Use integer arithmetic or explicitly cast the float result.
-	// We'll calculate it using integer arithmetic by multiplying by 587 and dividing by 1000.
-	// 96 * 0.587 = 56.352. (96 * 587) / 1000 = 56.352 (Go truncates the integer division to 56).
-	TileHeight    = TileWidth * 587) / 1000 / 2
-	FloorGridSize = 6
-
-	// Estimated center of the room area within the final image canvas.
-	CanvasCenterX = 377
-	CanvasCenterY = 200
-)
-
 // GenerateRoomImage creates the room image with base background, tiled floor, projects, and furniture.
 func GenerateRoomImage(room structs.Room) (image.Image, error) {
+	const (
+		TileWidth = 96 / 2
+		// FIX: Use integer arithmetic or explicitly cast the float result.
+		// We'll calculate it using integer arithmetic by multiplying by 587 and dividing by 1000.
+		// 96 * 0.587 = 56.352. (96 * 587) / 1000 = 56.352 (Go truncates the integer division to 56).
+		TileHeight    = TileWidth * 587 / 1000 / 2
+		FloorGridSize = 6
+
+		// Estimated center of the room area within the final image canvas.
+		CanvasCenterX = 377
+		CanvasCenterY = 200
+	)
 	// --- 1. Load the base room image (ressources/room.png) ---
 	baseRoomFile, err := os.Open("ressources/room.png")
 	if err != nil {
