@@ -47,7 +47,12 @@ func (bot *MilkywayBot) Run() {
 				log.Println("Successfully executed command:", name)
 			}
 		})
+
 	}
+
+	r.Get("/otp/verify", func(w http.ResponseWriter, r *http.Request) {
+		HandleOtpVerifying(w, r, bot)
+	})
 
 	log.Println("Server starting at http://localhost:" + bot.Port)
 	http.ListenAndServe(":"+bot.Port, r)

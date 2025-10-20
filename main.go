@@ -51,6 +51,20 @@ func createMilkywayBot() (*bot.MilkywayBot, error) {
 		return nil, errors.New("failed to connect to SQLite database: " + err.Error())
 	}
 
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS otps (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			otp TEXT UNIQUE,
+			slack_id TEXT,
+			action TEXT,
+			action_email TEXT,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);
+		`)
+	if err != nil {
+		return nil, errors.New("failed to create otps table: " + err.Error())
+	}
+
 	var port = os.Getenv("PORT")
 	if port == "" {
 		port = "3000"
