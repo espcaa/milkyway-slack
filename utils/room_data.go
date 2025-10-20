@@ -100,8 +100,8 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 	canvas := image.NewRGBA(baseRoomImg.Bounds())
 	draw.Draw(canvas, canvas.Bounds(), baseRoomImg, image.Point{}, draw.Src)
 
-	const GridOffsetFloorY = 0
-	const GridOffsetFloorX = CanvasCenterY + 20
+	const GridOffsetFloorY = CanvasCenterY - (TileHeight * FloorGridSize / 2)
+	const GridOffsetFloorX = CanvasCenterX - (TileWidth * FloorGridSize / 2)
 
 	floorTextureName := room.Floor.Texture
 	if floorTextureName == "" {
@@ -115,8 +115,8 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		if err == nil {
 			for i := 0; i < FloorGridSize; i++ {
 				for j := 0; j < FloorGridSize; j++ {
-					tileRelX := (j - i) * TileWidth
-					tileRelY := (j + i) * TileHeight
+					tileRelX := (j - i) * TileWidth / 2
+					tileRelY := (j + i) * TileHeight / 2
 
 					absX := GridOffsetFloorX + tileRelX
 					absY := GridOffsetFloorY + tileRelY
