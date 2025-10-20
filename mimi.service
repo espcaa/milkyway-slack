@@ -1,0 +1,12 @@
+[Unit]
+Description=mimi from milkyway
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/alice/milkyway-slack/milkyway-slack
+Restart=on-failure
+WorkingDirectory=/home/alice/milkyway-slack
+
+[Install]
+WantedBy=default.target
