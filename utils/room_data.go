@@ -86,7 +86,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		FloorGridSize = 6
 		CanvasCenterX = 377
 		CanvasCenterY = 600
-		ScaleFactor   = 1.5 // everything scaled 1.5x
+		ScaleFactor   = 1 // everything scaled 1.5x
 	)
 
 	baseRoomFile, err := os.Open("ressources/room.png")
@@ -102,8 +102,8 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 	canvas := image.NewRGBA(baseRoomImg.Bounds())
 	draw.Draw(canvas, canvas.Bounds(), baseRoomImg, image.Point{}, draw.Src)
 
-	const GridOffsetFloorY = CanvasCenterY - int(float64(TileHeight*FloorGridSize)/2*ScaleFactor)
-	const GridOffsetFloorX = CanvasCenterX - int(float64(TileWidth*FloorGridSize)/2*ScaleFactor)
+	const GridOffsetFloorY = CanvasCenterY - int(float64(TileHeight*FloorGridSize)/2*ScaleFactor) + 10
+	const GridOffsetFloorX = 0
 
 	// Floor
 	floorTextureName := room.Floor.Texture
