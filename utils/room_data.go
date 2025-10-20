@@ -113,26 +113,26 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		defer tileFile.Close()
 		tileImg, err := png.Decode(tileFile)
 		if err == nil {
+			// Pre-resize once
+			resizedTileImg := resize.Resize(TileWidth, TileHeight, tileImg, resize.Lanczos3)
+			tileBounds := resizedTileImg.Bounds()
+			tileW, tileH := tileBounds.Dx(), tileBounds.Dy()
+
 			for i := 0; i < FloorGridSize; i++ {
 				for j := 0; j < FloorGridSize; j++ {
-					tileRelX := (j - i) * TileWidth / 2
-					tileRelY := (j + i) * TileHeight / 2
+					tileRelX := (j - i) * tileW / 2
+					tileRelY := (j + i) * tileH / 2
 
 					absX := GridOffsetFloorX + tileRelX
 					absY := GridOffsetFloorY + tileRelY
 
 					pos := image.Pt(absX, absY)
-					r := image.Rectangle{Min: pos, Max: pos.Add(tileImg.Bounds().Size())}
-
-					resizedTileImg := resize.Resize(TileWidth*2, TileHeight*2, tileImg, resize.Lanczos3)
-
-					tileImg = resizedTileImg
-					draw.Draw(canvas, r, tileImg, image.Point{}, draw.Over)
+					r := image.Rectangle{Min: pos, Max: pos.Add(tileBounds.Size())}
+					draw.Draw(canvas, r, resizedTileImg, image.Point{}, draw.Over)
 				}
 			}
 		}
 	}
-
 	for _, project := range room.Projects {
 		if project.Egg_texture == "" || project.Position == "" {
 			continue
