@@ -134,8 +134,8 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 					// top: ((var(--x) + var(--y)) * var(--tile-height) / 2)
 
 					// x = j, y = i
-					tileRelX := (j - i) * TileWidth
-					tileRelY := (j + i) * TileHeight
+					tileRelX := (j - i) * TileWidth / 2
+					tileRelY := (j + i) * TileHeight / 2
 
 					// Calculate the absolute position on the canvas
 					absX := GridOffsetFloorX + tileRelX
@@ -145,7 +145,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 					r := image.Rectangle{Min: pos, Max: pos.Add(tileImg.Bounds().Size())}
 
 					// resize tileImg to TileWidth x TileHeight
-					resizedTileImg := resize.Resize(uint(TileWidth), uint(TileHeight), tileImg, resize.Lanczos3)
+					resizedTileImg := resize.Resize(TileWidth, TileHeight, tileImg, resize.Lanczos3)
 
 					tileImg = resizedTileImg
 					// Draw the tile over the base image
@@ -180,8 +180,6 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		}
 		xRel, err1 := strconv.Atoi(parts[0])
 		yRel, err2 := strconv.Atoi(parts[1])
-		xRel *= 2 // Projects use double scale for positioning
-		yRel *= 2
 		if err1 != nil || err2 != nil {
 			continue
 		}
@@ -191,7 +189,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		// Scale the image so its width is TileWidth (96), preserving aspect ratio (height=0).
 		// NOTE: This requires importing a resizing library like 'github.com/oliamb/resize'.
 
-		resizedImg := resize.Resize(TileWidth*2, 0, projectImg, resize.Lanczos3)
+		resizedImg := resize.Resize(TileWidth, 0, projectImg, resize.Lanczos3)
 
 		// Reassign projectImg to the new, resized image
 		projectImg = resizedImg
@@ -246,7 +244,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		// Scale the image so its width is TileWidth (96), preserving aspect ratio (height=0).
 		// NOTE: This requires importing a resizing library like 'github.com/oliamb/resize'.
 
-		resizedImg := resize.Resize(TileWidth*2, 0, furnImg, resize.Lanczos3)
+		resizedImg := resize.Resize(TileWidth, 0, furnImg, resize.Lanczos3)
 
 		// Reassign furnImg to the new, resized image
 		furnImg = resizedImg
