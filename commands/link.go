@@ -26,7 +26,12 @@ func (c LinkCommand) Run(w http.ResponseWriter, r *http.Request) error {
 
 	// Validate email format
 	if !strings.Contains(text, "@") {
-		return fmt.Errorf("invalid email address format")
+		response := map[string]interface{}{
+			"response_type": "ephemeral",
+			"text":          "Invalid email format. Please provide a valid email address. /link [email-adress-here]",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		return json.NewEncoder(w).Encode(response)
 	}
 
 	// Store in override db
@@ -35,7 +40,12 @@ func (c LinkCommand) Run(w http.ResponseWriter, r *http.Request) error {
 		userID, text,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to store email override: %w", err)
+		response := map[string]interface{}{
+			"response_type": "ephemeral",
+			"text":          "whoopsie the db is cooked",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		return json.NewEncoder(w).Encode(response)
 	}
 
 	// Send success response
