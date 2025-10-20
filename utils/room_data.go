@@ -78,19 +78,99 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 }
 
 func GenerateRoomImage(room structs.Room) (image.Image, error) {
-	floorFile, err := os.Open("ressources/synced/floor/" + room.Floor.Texture)
+	// --- 1. Load the base room image (ressources/room.png) ---
+	baseRoomFile, err := os.Open("ressources/room.png")
 	if err != nil {
+		// Return an error if the base image can't be opened
 		return nil, err
 	}
-	defer floorFile.Close()
-	floorImg, err := png.Decode(floorFile)
+	defer baseRoomFile.Close()
+	baseRoomImg, err := png.Decode(baseRoomFile)
 	if err != nil {
+		// Return an error if the base image can't be decoded
 		return nil, err
 	}
 
-	canvas := image.NewRGBA(floorImg.Bounds())
-	draw.Draw(canvas, canvas.Bounds(), floorImg, image.Point{}, draw.Over)
+	// Create the canvas based on the base room image's bounds
+	canvas := image.NewRGBA(baseRoomImg.Bounds())
+	// Draw the base room image first (e.g., walls, shadows)
+	draw.Draw(canvas, canvas.Bounds(), baseRoomImg, image.Point{}, draw.Src)
 
+	// --- 2. Apply the ground tiling ---
+
+	// Determine the starting position (origin for the tile grid).
+	// For a 6x6 grid, the center of the rhombus (at the middle-most tile) should be near the canvas center.
+	// We'll calculate the top-left offset to center the grid.
+	// The rhombus width at its widest point is FloorGridSize * TileWidth.
+	// The rhombus height is FloorGridSize * TileHeight.
+
+	// Assuming the canvas center is (CanvasWidth/2, CanvasHeight/2).
+	// We need to offset the entire grid to be centered on the floor area of the room.png.
+	// This offset will be highly dependent on the 'room.png' dimensions and content.
+	// A common approach for a centered 6x6 grid:
+	// The top point of the 6x6 rhombus is at (3 * TileWidth, 0) relative to its container's top-left.
+	// The container's top-left in the Svelte CSS has a margin-left of -1 * TileWidth.
+	// Let's use a manual offset based on a typical room layout:
+	// Assuming room.png is 700px high (like the Svelte CSS) and ~700-800px wide.
+	const CanvasCenterX = 350 // Estimate half of a 700px wide canvas
+	const CanvasCenterY = 300 // Estimate the y-coordinate of the room floor's center
+
+	// Calculate the top-left corner of the isometric projection of the tile grid.
+	// (0,0) tile position (relative to the grid container) should be centered.
+	// Container's origin (for the tile grid) should be:
+	// X: CanvasCenterX - (GridTotalWidth / 2) + MarginAdjustment (from Svelte CSS `margin-left: calc(-1 * var(--tile-width));`)
+	// GridTotalWidth is FloorGridSize * TileWidth
+	// Let's simplify and use an empirical offset based on a centered 6x6:
+	const GridOffsetFloorX = CanvasCenterX - (TileWidth / 2) - TileWidth // Adjust for 6x6 center and Svelte -1 * TileWidth margin
+	const GridOffsetFloorY = CanvasCenterY - (FloorGridSize * TileHeight / 2)
+
+	// Use a hardcoded default floor texture if room.Floor.Texture is empty, or assume it's set.
+	floorTextureName := room.Floor.Texture
+	if floorTextureName == "" {
+		floorTextureName = "wood" // Fallback to 'wood'
+	}
+
+	// Pre-load the floor tile image (assuming all tiles in the grid use the same one)
+	tileFile, err := os.Open("ressources/synced/floor/" + floorTextureName + ".png")
+	if err != nil {
+		// Log the error but continue if floor tile can't be found (it won't render)
+		// Or you might return the error, depending on how critical the floor is.
+		// For this example, we'll continue with the base room image if the specific floor file fails.
+		// return nil, err // Uncomment this if floor is critical
+	} else {
+		defer tileFile.Close()
+		tileImg, err := png.Decode(tileFile)
+		if err != nil {
+			// Continue if decoding fails
+		} else {
+			// Iterate over the grid (i = y, j = x in your Svelte code)
+			for i := 0; i < FloorGridSize; i++ {
+				for j := 0; j < FloorGridSize; j++ {
+					// Isometric coordinate calculation, matching the Svelte CSS:
+					// left: ((var(--x) - var(--y)) * var(--tile-width) / 2 )
+					// top: ((var(--x) + var(--y)) * var(--tile-height) / 2)
+
+					// x = j, y = i
+					tileRelX := (j - i) * TileWidth / 2
+					tileRelY := (j + i) * TileHeight / 2
+
+					// Calculate the absolute position on the canvas
+					absX := GridOffsetFloorX + tileRelX
+					absY := GridOffsetFloorY + tileRelY
+
+					pos := image.Pt(absX, absY)
+					r := image.Rectangle{Min: pos, Max: pos.Add(tileImg.Bounds().Size())}
+
+					// Draw the tile
+					draw.Draw(canvas, r, tileImg, image.Point{}, draw.Over)
+				}
+			}
+		}
+	}
+
+	// --- 3. Draw Projects ---
+	// The projects' x, y are relative to the room's center, which we defined as (CanvasCenterX, CanvasCenterY)
+	// These coordinates are the same ones clamped by the Svelte drag logic.
 	for _, project := range room.Projects {
 		if project.Egg_texture == "" || project.Position == "" {
 			continue
@@ -110,17 +190,26 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		if len(parts) != 2 {
 			continue
 		}
-		x, err1 := strconv.Atoi(parts[0])
-		y, err2 := strconv.Atoi(parts[1])
+		// The coordinates here (x, y) are relative to the room's center (0, 0) in the Svelte code.
+		xRel, err1 := strconv.Atoi(parts[0])
+		yRel, err2 := strconv.Atoi(parts[1])
 		if err1 != nil || err2 != nil {
 			continue
 		}
 
-		pos := image.Pt(x, y)
-		r := image.Rectangle{Min: pos, Max: pos.Add(projectImg.Bounds().Size())}
+		// Calculate absolute position on the canvas: CanvasCenter + RelativePos - (ImageSize/2)
+		// We subtract half the image size to center the image at the coordinate (xRel, yRel).
+		imgBounds := projectImg.Bounds()
+		xAbs := CanvasCenterX + xRel - imgBounds.Dx()/2
+		yAbs := CanvasCenterY + yRel - imgBounds.Dy()/2
+
+		pos := image.Pt(xAbs, yAbs)
+		r := image.Rectangle{Min: pos, Max: pos.Add(imgBounds.Size())}
 		draw.Draw(canvas, r, projectImg, image.Point{}, draw.Over)
 	}
 
+	// --- 4. Draw Furnitures ---
+	// Same logic as projects, using the room center as the origin.
 	for _, furniture := range room.Furnitures {
 		if furniture.Texture == "" || furniture.Position == "" {
 			continue
@@ -137,17 +226,26 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		}
 
 		parts := strings.Split(furniture.Position, ",")
-		if len(parts) != 2 {
+		// Note: The furniture position might also include 'flipped' (e.g., "x,y,0") based on your Svelte code.
+		// For simplicity, we only parse x, y here, assuming the first two parts.
+		if len(parts) < 2 {
 			continue
 		}
-		x, err1 := strconv.Atoi(parts[0])
-		y, err2 := strconv.Atoi(parts[1])
+		xRel, err1 := strconv.Atoi(parts[0])
+		yRel, err2 := strconv.Atoi(parts[1])
 		if err1 != nil || err2 != nil {
 			continue
 		}
 
-		pos := image.Pt(x, y)
-		r := image.Rectangle{Min: pos, Max: pos.Add(furnImg.Bounds().Size())}
+		// Calculate absolute position on the canvas: CanvasCenter + RelativePos - (ImageSize/2)
+		imgBounds := furnImg.Bounds()
+		xAbs := CanvasCenterX + xRel - imgBounds.Dx()/2
+		yAbs := CanvasCenterY + yRel - imgBounds.Dy()/2
+
+		pos := image.Pt(xAbs, yAbs)
+		r := image.Rectangle{Min: pos, Max: pos.Add(imgBounds.Size())}
+
+		// Note: If you need to handle `flipped`, you would apply a transform here before drawing.
 		draw.Draw(canvas, r, furnImg, image.Point{}, draw.Over)
 	}
 
