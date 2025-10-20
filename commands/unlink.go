@@ -16,8 +16,6 @@ func (c LinkCommand) Run(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("failed to parse form: %w", err)
 	}
 
-	text := r.PostFormValue("text")
-
 	userID := r.PostFormValue("user_id")
 
 	// just delete any existing overrides
