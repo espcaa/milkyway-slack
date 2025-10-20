@@ -162,7 +162,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 			continue
 		}
 
-		// resize 1.5x
+		// resize 1.5x (no extra *2)
 		resizedImg := resize.Resize(uint(float64(projectImg.Bounds().Dx())*ScaleFactor), 0, projectImg, resize.Lanczos3)
 		projectImg = resizedImg
 
@@ -201,6 +201,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 			continue
 		}
 
+		// resize 1.5x (no extra *2)
 		resizedImg := resize.Resize(uint(float64(furnImg.Bounds().Dx())*ScaleFactor), 0, furnImg, resize.Lanczos3)
 		furnImg = resizedImg
 
