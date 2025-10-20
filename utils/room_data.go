@@ -1,8 +1,13 @@
 package utils
 
 import (
+	"image"
+	"image/draw"
+	"image/png"
 	"milkyway-slack/structs"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, error) {
@@ -70,4 +75,81 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 	room.Floor.Texture = "wood.png"
 
 	return room, nil
+}
+
+func GenerateRoomImage(room structs.Room) (image.Image, error) {
+	floorFile, err := os.Open("ressources/synced/floor/" + room.Floor.Texture)
+	if err != nil {
+		return nil, err
+	}
+	defer floorFile.Close()
+	floorImg, err := png.Decode(floorFile)
+	if err != nil {
+		return nil, err
+	}
+
+	canvas := image.NewRGBA(floorImg.Bounds())
+	draw.Draw(canvas, canvas.Bounds(), floorImg, image.Point{}, draw.Over)
+
+	for _, project := range room.Projects {
+		if project.Egg_texture == "" || project.Position == "" {
+			continue
+		}
+
+		projectFile, err := os.Open("ressources/synced/projects/" + project.Egg_texture)
+		if err != nil {
+			continue
+		}
+		projectImg, err := png.Decode(projectFile)
+		projectFile.Close()
+		if err != nil {
+			continue
+		}
+
+		parts := strings.Split(project.Position, ",")
+		if len(parts) != 2 {
+			continue
+		}
+		x, err1 := strconv.Atoi(parts[0])
+		y, err2 := strconv.Atoi(parts[1])
+		if err1 != nil || err2 != nil {
+			continue
+		}
+
+		pos := image.Pt(x, y)
+		r := image.Rectangle{Min: pos, Max: pos.Add(projectImg.Bounds().Size())}
+		draw.Draw(canvas, r, projectImg, image.Point{}, draw.Over)
+	}
+
+	for _, furniture := range room.Furnitures {
+		if furniture.Texture == "" || furniture.Position == "" {
+			continue
+		}
+
+		furnFile, err := os.Open("ressources/synced/room/" + furniture.Texture)
+		if err != nil {
+			continue
+		}
+		furnImg, err := png.Decode(furnFile)
+		furnFile.Close()
+		if err != nil {
+			continue
+		}
+
+		parts := strings.Split(furniture.Position, ",")
+		if len(parts) != 2 {
+			continue
+		}
+		x, err1 := strconv.Atoi(parts[0])
+		y, err2 := strconv.Atoi(parts[1])
+		if err1 != nil || err2 != nil {
+			continue
+		}
+
+		pos := image.Pt(x, y)
+		r := image.Rectangle{Min: pos, Max: pos.Add(furnImg.Bounds().Size())}
+		draw.Draw(canvas, r, furnImg, image.Point{}, draw.Over)
+	}
+
+	return canvas, nil
 }

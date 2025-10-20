@@ -71,7 +71,6 @@ func (c RoomCommand) Run(w http.ResponseWriter, r *http.Request) error {
 
 		markdownRoomInfo += "\n*Projects:*\n\n"
 		for _, value := range room.Projects {
-			markdownRoomInfo += value.Position
 			markdownRoomInfo += fmt.Sprintf(" %v : %v \n ", value.Egg_texture, value.Position)
 		}
 		markdownRoomInfo += "\n*Furnitures:*\n\n"
@@ -82,12 +81,41 @@ func (c RoomCommand) Run(w http.ResponseWriter, r *http.Request) error {
 			markdownRoomInfo = "Your room is empty. Start adding projects!"
 		}
 
-		blocks := []Block{
+		roomImg, err := utils.GenerateRoomImage(room)
+		if err != nil {
+			log.Printf("Error generating room image: %v", err)
+			sendErrorResponse(url, "Failed to generate your room image :(")
+			return
+		}
+
+		// upload image to Slack
+		fileID, err := utils.UploadImageFromBuffer(roomImg, "room.png", nil)
+		if err != nil {
+			log.Printf("Error uploading room image: %v", err)
+			sendErrorResponse(url, "Failed to upload your room image :(")
+			return
+		}
+
+		// make uploaded image public
+		publicURL, err := utils.MakeSlackFilePublic(fileID)
+		if err != nil {
+			log.Printf("Error making file public: %v", err)
+			sendErrorResponse(url, "Failed to make room image public :(")
+			return
+		}
+
+		// send the image as a message in the channel
+		blocks := []map[string]any{
 			{
-				Type: "section",
-				Text: &Text{
-					Type: "mrkdwn",
-					Text: markdownRoomInfo,
+				"type":      "image",
+				"image_url": publicURL,
+				"alt_text":  "Your room image",
+			},
+			{
+				"type": "section",
+				"text": map[string]any{
+					"type": "mrkdwn",
+					"text": markdownRoomInfo,
 				},
 			},
 		}
@@ -95,12 +123,12 @@ func (c RoomCommand) Run(w http.ResponseWriter, r *http.Request) error {
 		payload := map[string]any{
 			"response_type": "in_channel",
 			"blocks":        blocks,
-			"text":          "room",
+			"text":          "Here’s your room!",
 		}
 
 		if err := sendSlackResponse(url, payload); err != nil {
-			log.Printf("Error sending final response: %v", err)
-			sendErrorResponse(url, "Failed to send room message :(")
+			log.Printf("Error sending room image: %v", err)
+			sendErrorResponse(url, "Failed to send room image :(")
 		}
 	}(responseURL, userID, c.Bot)
 
