@@ -100,8 +100,8 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 	canvas := image.NewRGBA(baseRoomImg.Bounds())
 	draw.Draw(canvas, canvas.Bounds(), baseRoomImg, image.Point{}, draw.Src)
 
-	const GridOffsetFloorX = 0
-	const GridOffsetFloorY = CanvasCenterY + 20
+	const GridOffsetFloorY = 0
+	const GridOffsetFloorX = CanvasCenterY + 20
 
 	floorTextureName := room.Floor.Texture
 	if floorTextureName == "" {
@@ -124,7 +124,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 					pos := image.Pt(absX, absY)
 					r := image.Rectangle{Min: pos, Max: pos.Add(tileImg.Bounds().Size())}
 
-					resizedTileImg := resize.Resize(TileWidth*2, TileHeight, tileImg, resize.Lanczos3)
+					resizedTileImg := resize.Resize(TileWidth*2, TileHeight*2, tileImg, resize.Lanczos3)
 
 					tileImg = resizedTileImg
 					draw.Draw(canvas, r, tileImg, image.Point{}, draw.Over)
@@ -194,9 +194,6 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		}
 		xRel, err1 := strconv.Atoi(parts[0])
 		yRel, err2 := strconv.Atoi(parts[1])
-
-		xRel *= 2
-		yRel *= 2
 
 		if err1 != nil || err2 != nil {
 			continue
