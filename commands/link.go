@@ -8,11 +8,11 @@ import (
 	"strings"
 )
 
-type UnLinkCommand struct {
+type LinkCommand struct {
 	Bot structs.BotInterface
 }
 
-func (c UnLinkCommand) Run(w http.ResponseWriter, r *http.Request) error {
+func (c LinkCommand) Run(w http.ResponseWriter, r *http.Request) error {
 	if err := r.ParseForm(); err != nil {
 		return fmt.Errorf("failed to parse form: %w", err)
 	}

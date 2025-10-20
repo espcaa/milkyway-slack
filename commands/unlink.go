@@ -7,11 +7,11 @@ import (
 	"net/http"
 )
 
-type LinkCommand struct {
+type UnLinkCommand struct {
 	Bot structs.BotInterface
 }
 
-func (c LinkCommand) Run(w http.ResponseWriter, r *http.Request) error {
+func (c UnLinkCommand) Run(w http.ResponseWriter, r *http.Request) error {
 	if err := r.ParseForm(); err != nil {
 		return fmt.Errorf("failed to parse form: %w", err)
 	}
