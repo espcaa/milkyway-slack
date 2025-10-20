@@ -7,6 +7,7 @@ func InitCommands(bot structs.BotInterface) map[string]structs.Command {
 		"health": HealthCommand{},
 		"room":   RoomCommand{Bot: bot},
 		"link":   LinkCommand{Bot: bot},
+		"unlink": UnLinkCommand{Bot: bot},
 	}
 }
 
