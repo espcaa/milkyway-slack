@@ -89,18 +89,9 @@ func (c RoomCommand) Run(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		// upload image to Slack
-		fileID, err := utils.UploadImageFromBuffer(roomImg, "room.png", nil)
+		publicurl, err := utils.UploadImageBuffer(roomImage, "my_room.png")
 		if err != nil {
-			log.Printf("Error uploading room image: %v", err)
-			sendErrorResponse(url, "Failed to upload your room image :(")
-			return
-		}
-
-		// make uploaded image public
-		publicURL, err := utils.MakeSlackFilePublic(fileID)
-		if err != nil {
-			log.Printf("Error making file public: %v", err)
-			sendErrorResponse(url, "Failed to make room image public :(")
+			log.Printf("failed to upload image: %v", err)
 			return
 		}
 
@@ -108,7 +99,7 @@ func (c RoomCommand) Run(w http.ResponseWriter, r *http.Request) error {
 		blocks := []map[string]any{
 			{
 				"type":      "image",
-				"image_url": publicURL,
+				"image_url": publicurl,
 				"alt_text":  "Your room image",
 			},
 			{
