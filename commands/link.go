@@ -22,7 +22,12 @@ func (c LinkCommand) Run(w http.ResponseWriter, r *http.Request) error {
 	email := strings.TrimSpace(r.PostFormValue("text"))
 
 	if email == "" {
-		return fmt.Errorf("please provide an email address to link")
+		response := map[string]interface{}{
+			"response_type": "ephemeral",
+			"text":          "Please provide an email address to link. /link [email-address-here]",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		return json.NewEncoder(w).Encode(response)
 	}
 
 	// Validate email format

@@ -57,7 +57,7 @@ func (c UnLinkCommand) Run(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		response := map[string]interface{}{
 			"response_type": "ephemeral",
-			"text":          "Database error occurred while retrieving email",
+			"text":          "something wrong occurred... maybe you never linked an account?",
 		}
 		w.Header().Set("Content-Type", "application/json")
 		return json.NewEncoder(w).Encode(response)
