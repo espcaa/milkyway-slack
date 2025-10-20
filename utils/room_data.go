@@ -12,6 +12,8 @@ import (
 	"github.com/nfnt/resize"
 )
 
+// TODO : fix everything sob
+
 func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, error) {
 	room := structs.Room{
 		Projects: make([]structs.Project, 0),

@@ -13,4 +13,8 @@
 
 ## features
 
-- /room command, sends an image of your milkyway room! (soon)
+- /room command, sends an image of your milkyway room! (broken but here)
+- /health command, checks if the bot's online
+- /link command, links your slack account to your milkyway account with an otp link snet by mail
+- /unlink command, same but for unlinking
+- games coming soon :sparkles:
