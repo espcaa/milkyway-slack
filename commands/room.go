@@ -89,7 +89,7 @@ func (c RoomCommand) Run(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		// upload image to Slack
-		publicurl, err := utils.UploadImageBuffer(roomImage, "my_room.png")
+		publicurl, err := utils.UploadImageBuffer(roomImg, "my_room.png")
 		if err != nil {
 			log.Printf("failed to upload image: %v", err)
 			return
