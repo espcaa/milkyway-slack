@@ -91,7 +91,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 
 		// Estimated center of the room area within the final image canvas.
 		CanvasCenterX = 377
-		CanvasCenterY = 440
+		CanvasCenterY = 600
 	)
 	// --- 1. Load the base room image (ressources/room.png) ---
 	baseRoomFile, err := os.Open("ressources/room.png")
@@ -144,6 +144,10 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 					pos := image.Pt(absX, absY)
 					r := image.Rectangle{Min: pos, Max: pos.Add(tileImg.Bounds().Size())}
 
+					// resize tileImg to TileWidth x TileHeight
+					resizedTileImg := resize.Resize(uint(TileWidth), uint(TileHeight), tileImg, resize.Lanczos3)
+
+					tileImg = resizedTileImg
 					// Draw the tile over the base image
 					draw.Draw(canvas, r, tileImg, image.Point{}, draw.Over)
 				}
