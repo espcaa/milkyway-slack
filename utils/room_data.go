@@ -120,7 +120,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		floorTextureName = "wood" // Fallback
 	}
 
-	tileFile, err := os.Open("ressources/synced/floor/" + floorTextureName + ".png")
+	tileFile, err := os.Open("ressources/synced/floor/" + floorTextureName)
 	if err == nil {
 		defer tileFile.Close()
 		tileImg, err := png.Decode(tileFile)
@@ -157,7 +157,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 			continue
 		}
 
-		projectFile, err := os.Open("ressources/synced/projects/" + project.Egg_texture)
+		projectFile, err := os.Open("ressources/synced" + project.Egg_texture)
 		if err != nil {
 			continue
 		}
@@ -196,7 +196,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 			continue
 		}
 
-		furnFile, err := os.Open("ressources/synced/room/" + furniture.Texture)
+		furnFile, err := os.Open("ressources/synced/room/" + furniture.Texture + ".png")
 		if err != nil {
 			continue
 		}
