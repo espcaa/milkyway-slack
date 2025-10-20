@@ -82,11 +82,11 @@ func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, e
 // GenerateRoomImage creates the room image with base background, tiled floor, projects, and furniture.
 func GenerateRoomImage(room structs.Room) (image.Image, error) {
 	const (
-		TileWidth = 96 / 2
+		TileWidth = 96
 		// FIX: Use integer arithmetic or explicitly cast the float result.
 		// We'll calculate it using integer arithmetic by multiplying by 587 and dividing by 1000.
 		// 96 * 0.587 = 56.352. (96 * 587) / 1000 = 56.352 (Go truncates the integer division to 56).
-		TileHeight    = TileWidth * 587 / 1000 / 2
+		TileHeight    = TileWidth * 587 / 1000
 		FloorGridSize = 6
 
 		// Estimated center of the room area within the final image canvas.
@@ -185,7 +185,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		// Scale the image so its width is TileWidth (96), preserving aspect ratio (height=0).
 		// NOTE: This requires importing a resizing library like 'github.com/oliamb/resize'.
 
-		resizedImg := resize.Resize(TileWidth, 0, projectImg, resize.Lanczos3)
+		resizedImg := resize.Resize(TileWidth*2, 0, projectImg, resize.Lanczos3)
 
 		// Reassign projectImg to the new, resized image
 		projectImg = resizedImg
@@ -236,7 +236,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		// Scale the image so its width is TileWidth (96), preserving aspect ratio (height=0).
 		// NOTE: This requires importing a resizing library like 'github.com/oliamb/resize'.
 
-		resizedImg := resize.Resize(TileWidth, 0, furnImg, resize.Lanczos3)
+		resizedImg := resize.Resize(TileWidth*2, 0, furnImg, resize.Lanczos3)
 
 		// Reassign furnImg to the new, resized image
 		furnImg = resizedImg
