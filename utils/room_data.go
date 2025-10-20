@@ -8,6 +8,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/nfnt/resize"
 )
 
 func GetRoomData(bot structs.BotInterface, userRecordId string) (structs.Room, error) {
@@ -86,7 +88,7 @@ const (
 	FloorGridSize = 6
 
 	// Estimated center of the room area within the final image canvas.
-	CanvasCenterX = 350
+	CanvasCenterX = 377
 	CanvasCenterY = 300
 )
 
@@ -161,7 +163,9 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		if err != nil {
 			continue
 		}
-		projectImg, err := png.Decode(projectFile)
+
+		// Use image.Decode as requested (no encoding step needed)
+		projectImg, _, err := image.Decode(projectFile)
 		projectFile.Close()
 		if err != nil {
 			continue
@@ -171,15 +175,25 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		if len(parts) != 2 {
 			continue
 		}
-		// xRel, yRel are the direct pixel offsets from the center (0,0) as seen in the Svelte code.
 		xRel, err1 := strconv.Atoi(parts[0])
 		yRel, err2 := strconv.Atoi(parts[1])
 		if err1 != nil || err2 != nil {
 			continue
 		}
 
+		// ==========================================================
+		// ✨ RESIZE IMPLEMENTATION ✨
+		// Scale the image so its width is TileWidth (96), preserving aspect ratio (height=0).
+		// NOTE: This requires importing a resizing library like 'github.com/oliamb/resize'.
+
+		resizedImg := resize.Resize(TileWidth, 0, projectImg, resize.Lanczos3)
+
+		// Reassign projectImg to the new, resized image
+		projectImg = resizedImg
+		// ==========================================================
+
 		// Calculate absolute position on the canvas: CanvasCenter + RelativePos - (ImageSize/2)
-		// We subtract half the image size to center the image at the specified (xRel, yRel) point.
+		// We use the bounds of the NOW RESIZED image.
 		imgBounds := projectImg.Bounds()
 		xAbs := CanvasCenterX + xRel - imgBounds.Dx()/2
 		yAbs := CanvasCenterY + yRel - imgBounds.Dy()/2
@@ -188,44 +202,57 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		r := image.Rectangle{Min: pos, Max: pos.Add(imgBounds.Size())}
 		draw.Draw(canvas, r, projectImg, image.Point{}, draw.Over)
 	}
-
 	// --- 4. Draw Furnitures ---
 	// Same 2D placement logic as projects.
-	for _, furniture := range room.Furnitures {
-		if furniture.Texture == "" || furniture.Position == "" {
-			continue
-		}
+	-for _, furniture := range room.Furnitures {
+			if furniture.Texture == "" || furniture.Position == "" {
+				continue
+			}
 
-		furnFile, err := os.Open("ressources/synced/room/" + furniture.Texture + ".png")
-		if err != nil {
-			continue
-		}
-		furnImg, err := png.Decode(furnFile)
-		furnFile.Close()
-		if err != nil {
-			continue
-		}
+			furnFile, err := os.Open("ressources/synced/room/" + furniture.Texture + ".png")
+			if err != nil {
+				continue
+			}
 
-		parts := strings.Split(furniture.Position, ",")
-		// Use only the first two parts for x, y, ignoring the optional 'flipped' state.
-		if len(parts) < 2 {
-			continue
-		}
-		xRel, err1 := strconv.Atoi(parts[0])
-		yRel, err2 := strconv.Atoi(parts[1])
-		if err1 != nil || err2 != nil {
-			continue
-		}
+        // Use image.Decode as requested
+			furnImg, _, err := image.Decode(furnFile)
+			furnFile.Close()
+			if err != nil {
+				continue
+			}
 
-		// Calculate absolute position on the canvas: CanvasCenter + RelativePos - (ImageSize/2)
-		imgBounds := furnImg.Bounds()
-		xAbs := CanvasCenterX + xRel - imgBounds.Dx()/2
-		yAbs := CanvasCenterY + yRel - imgBounds.Dy()/2
+			parts := strings.Split(furniture.Position, ",")
+			// Use only the first two parts for x, y, ignoring the optional 'flipped' state.
+			if len(parts) < 2 {
+				continue
+			}
+			xRel, err1 := strconv.Atoi(parts[0])
+			yRel, err2 := strconv.Atoi(parts[1])
+			if err1 != nil || err2 != nil {
+				continue
+			}
 
-		pos := image.Pt(xAbs, yAbs)
-		r := image.Rectangle{Min: pos, Max: pos.Add(imgBounds.Size())}
-		draw.Draw(canvas, r, furnImg, image.Point{}, draw.Over)
-	}
+			// ==========================================================
+			// ✨ RESIZE IMPLEMENTATION FOR FURNITURE ✨
+			// Scale the image so its width is TileWidth (96), preserving aspect ratio (height=0).
+        // NOTE: This requires importing a resizing library like 'github.com/oliamb/resize'.
+
+			resizedImg := resize.Resize(TileWidth, 0, furnImg, resize.Lanczos3)
+
+        // Reassign furnImg to the new, resized image
+        furnImg = resizedImg
+        // ==========================================================
+
+			// Calculate absolute position on the canvas: CanvasCenter + RelativePos - (ImageSize/2)
+			// We use the bounds of the NOW RESIZED image.
+			imgBounds := furnImg.Bounds()
+			xAbs := CanvasCenterX + xRel - imgBounds.Dx()/2
+			yAbs := CanvasCenterY + yRel - imgBounds.Dy()/2
+
+			pos := image.Pt(xAbs, yAbs)
+			r := image.Rectangle{Min: pos, Max: pos.Add(imgBounds.Size())}
+			draw.Draw(canvas, r, furnImg, image.Point{}, draw.Over)
+		}
 
 	return canvas, nil
 }
