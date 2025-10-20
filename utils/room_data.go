@@ -113,8 +113,8 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 
 	// Calculate the top-left corner of the isometric projection of the tile grid.
 	// This empirically centers a 6x6 grid in the floor area.
-	const GridOffsetFloorX = CanvasCenterX - (TileWidth / 2) - TileWidth
-	const GridOffsetFloorY = CanvasCenterY + (FloorGridSize * TileHeight / 2)
+	const GridOffsetFloorX = 0
+	const GridOffsetFloorY = CanvasCenterY + 20
 
 	floorTextureName := room.Floor.Texture
 	if floorTextureName == "" {
@@ -145,7 +145,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 					r := image.Rectangle{Min: pos, Max: pos.Add(tileImg.Bounds().Size())}
 
 					// resize tileImg to TileWidth x TileHeight
-					resizedTileImg := resize.Resize(TileWidth, TileHeight, tileImg, resize.Lanczos3)
+					resizedTileImg := resize.Resize(TileWidth*2, TileHeight, tileImg, resize.Lanczos3)
 
 					tileImg = resizedTileImg
 					// Draw the tile over the base image
@@ -189,7 +189,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		// Scale the image so its width is TileWidth (96), preserving aspect ratio (height=0).
 		// NOTE: This requires importing a resizing library like 'github.com/oliamb/resize'.
 
-		resizedImg := resize.Resize(TileWidth, 0, projectImg, resize.Lanczos3)
+		resizedImg := resize.Resize(TileWidth*2, 0, projectImg, resize.Lanczos3)
 
 		// Reassign projectImg to the new, resized image
 		projectImg = resizedImg
@@ -244,7 +244,7 @@ func GenerateRoomImage(room structs.Room) (image.Image, error) {
 		// Scale the image so its width is TileWidth (96), preserving aspect ratio (height=0).
 		// NOTE: This requires importing a resizing library like 'github.com/oliamb/resize'.
 
-		resizedImg := resize.Resize(TileWidth, 0, furnImg, resize.Lanczos3)
+		resizedImg := resize.Resize(TileWidth*2, 0, furnImg, resize.Lanczos3)
 
 		// Reassign furnImg to the new, resized image
 		furnImg = resizedImg
